@@ -1,0 +1,5 @@
+C:\Projects\SqlVarMaxConvert\SqlVarMaxScan\obj\Release\ResolveAssemblyReference.cache
+C:\Projects\SqlVarMaxConvert\SqlVarMaxScan\bin\Release\SqlVarMaxScan.dll
+C:\Projects\SqlVarMaxConvert\SqlVarMaxScan\bin\Release\SqlVarMaxScan.pdb
+C:\Projects\SqlVarMaxConvert\SqlVarMaxScan\obj\Release\SqlVarMaxScan.dll
+C:\Projects\SqlVarMaxConvert\SqlVarMaxScan\obj\Release\SqlVarMaxScan.pdb
