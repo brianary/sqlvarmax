@@ -1,5 +1,0 @@
-C:\Projects\SqlVarMaxConvert\SqlVarMaxScan\bin\Debug\SqlVarMaxScan.dll
-C:\Projects\SqlVarMaxConvert\SqlVarMaxScan\bin\Debug\SqlVarMaxScan.pdb
-C:\Projects\SqlVarMaxConvert\SqlVarMaxScan\obj\Debug\ResolveAssemblyReference.cache
-C:\Projects\SqlVarMaxConvert\SqlVarMaxScan\obj\Debug\SqlVarMaxScan.dll
-C:\Projects\SqlVarMaxConvert\SqlVarMaxScan\obj\Debug\SqlVarMaxScan.pdb
