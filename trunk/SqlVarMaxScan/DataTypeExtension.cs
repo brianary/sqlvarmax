@@ -1,13 +1,19 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using Microsoft.SqlServer.Management.Smo;
 
 namespace Webcoder.SqlServer.SqlVarMaxScan
 {
+	/// <summary>
+	/// Extension methods for the DataType object.
+	/// </summary>
 	public static class DataTypeExtension
 	{
+		#region Public Methods
+		/// <summary>
+		/// Converts the DataType object into the equivalent SQL syntax.
+		/// </summary>
+		/// <param name="datatype">The DataType object (extended).</param>
+		/// <returns>A SQL datatype string.</returns>
 		public static string ToSqlString(this DataType datatype)
 		{
 			var sqltype = datatype.Name;
@@ -33,5 +39,6 @@ namespace Webcoder.SqlServer.SqlVarMaxScan
 			}
 			return sqltype;
 		}
+		#endregion
 	}
 }

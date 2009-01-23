@@ -5,8 +5,8 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("SqlVarMaxScan")]
-[assembly: AssemblyDescription("A library that uses SMO to find the deprecated datatypes image, ntext, and text on a SQL Server.")]
+[assembly: AssemblyTitle("SqlVarMaxConvert")]
+[assembly: AssemblyDescription("An MMC Snap-in to find the deprecated data types image, ntext, and text on SQL Servers.")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("webcoder.info")]
 [assembly: AssemblyProduct("SqlVarMax")]
