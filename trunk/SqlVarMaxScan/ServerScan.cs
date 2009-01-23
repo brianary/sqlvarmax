@@ -69,7 +69,7 @@ namespace Webcoder.SqlServer.SqlVarMaxScan
 		{
 			int db = 0, dbcount = Server.Databases.Count;
 			string statusmessage = "Scanning " + Server.Name + ": ";
-			foreach (Database database in Server.Databases)
+			foreach (Database database in Server.Databases) //TODO: if(!database.IsSystemObject)
 			{
 				var dbscan = new DatabaseScan(database);
 				Scanning(this, new ScanProgressEventArgs(statusmessage + database.Name, db++, dbcount));

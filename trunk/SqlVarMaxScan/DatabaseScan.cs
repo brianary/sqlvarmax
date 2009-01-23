@@ -58,7 +58,7 @@ namespace Webcoder.SqlServer.SqlVarMaxScan
 		/// </summary>
 		public void PerformScan()
 		{
-			foreach (Table table in Database.Tables)
+			foreach (Table table in Database.Tables) //TODO: if(!table.IsSystemObject)
 				MaxableColumns.AddRange(MaxableColumn.FindMaxableColumns(table.Columns));
 		}
 
