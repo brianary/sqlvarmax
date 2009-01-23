@@ -11,13 +11,6 @@ namespace Webcoder.SqlServer.SqlVarMaxConvert
     /// </summary>
     public class DatabaseNode : ScopeNode
     {
-        #region Public Properties
-        /// <summary>
-        /// The database represented by this node.
-        /// </summary>
-        public DatabaseScan DatabaseScan { get; set; }
-        #endregion
-
         #region Public Constructors
         /// <summary>
         /// Constructs a database node, given the database.
@@ -25,11 +18,13 @@ namespace Webcoder.SqlServer.SqlVarMaxConvert
         /// <param name="db">The database this node represents.</param>
         public DatabaseNode(DatabaseScan databasescan)
         {
-            DatabaseScan = databasescan;
+            Tag = databasescan;
             DisplayName = databasescan.Name;
-            ViewDescriptions.Add(new MmcListViewDescription()
+            ViewDescriptions.AddRange(new MmcListViewDescription[] { 
+				new MmcListViewDescription()
                 { DisplayName= "Database Columns", ViewType= typeof(ColumnsListView), 
-                    Options= MmcListViewOptions.ExcludeScopeNodes });
+                    Options= MmcListViewOptions.ExcludeScopeNodes },
+			});
         }
         #endregion
     }

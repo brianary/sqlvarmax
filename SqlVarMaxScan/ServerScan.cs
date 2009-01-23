@@ -7,24 +7,64 @@ using System.Data;
 
 namespace Webcoder.SqlServer.SqlVarMaxScan
 {
+	/// <summary>
+	/// Scans a server for use of deprecated data types.
+	/// </summary>
 	public class ServerScan
 	{
+		#region Private Fields
+		/// <summary>
+		/// The server to scan.
+		/// </summary>
 		Server Server;
-		public List<DatabaseScan> DatabaseScans = new List<DatabaseScan>();
-		public List<MaxableColumn> MaxableColumns = new List<MaxableColumn>();
-		public delegate void ScanProgressHandler(object sender, ScanProgressEventArgs e);
-		public event ScanProgressHandler Scanning;
+		#endregion
 
+		#region Public Fields
+		/// <summary>
+		/// The list of databases on the server that contain maxable objects.
+		/// </summary>
+		public List<DatabaseScan> DatabaseScans = new List<DatabaseScan>();
+
+		/// <summary>
+		/// The list of columns on the server, for all databases, that use deprecated data types.
+		/// </summary>
+		public List<MaxableColumn> MaxableColumns = new List<MaxableColumn>();
+		#endregion
+
+		#region Public Properties
+		/// <summary>
+		/// Does this server contain objects that use deprecated data types?
+		/// </summary>
 		public bool HasMaxables
 		{
 			get { return DatabaseScans.Count > 0; }
 		}
+		#endregion
 
+		#region Public Delegates
+		/// <summary>
+		/// A handler for a scanning progress update event.
+		/// </summary>
+		/// <param name="sender">The object that caused the event.</param>
+		/// <param name="e">The event details.</param>
+		public delegate void ScanProgressHandler(object sender, ScanProgressEventArgs e);
+		#endregion
+
+		#region Public Constructors
+		/// <summary>
+		/// Creates a ServerScan object, given a server address.
+		/// </summary>
+		/// <param name="server">The server name or name\instance.</param>
 		public ServerScan(string server)
 		{
 			Server = new Server(server);
 		}
+		#endregion
 
+		#region Public Methods
+		/// <summary>
+		/// Scans the server for deprecated data types.
+		/// </summary>
 		public void PerformScan()
 		{
 			int db = 0, dbcount = Server.Databases.Count;
@@ -42,13 +82,23 @@ namespace Webcoder.SqlServer.SqlVarMaxScan
 			}
 		}
 
+		/// <summary>
+		/// Concatenates the SQL conversion strings from all of the scanned databases.
+		/// </summary>
+		/// <returns></returns>
 		public string GetSqlConversionString()
 		{
 			var sql = new StringBuilder();
 			sql.AppendFormat("-- SqlVarMax conversion script for {0}\\{1}\n", Server.Name, Server.InstanceName);
+			foreach (var database in DatabaseScans)
+				sql.Append(database.GetSqlConversionString());
 			return sql.ToString();
 		}
 
+		/// <summary>
+		/// Returns a list of SQL Servers on the network.
+		/// </summary>
+		/// <returns>A collection of names of SQL Servers on the network.</returns>
 		public static IEnumerable<string> EnumAvailableSqlServers()
 		{
 			var serverlist = new List<string>();
@@ -57,5 +107,13 @@ namespace Webcoder.SqlServer.SqlVarMaxScan
 					serverlist.Add((string)found["Name"]);
 			return serverlist;
 		}
+		#endregion
+
+		#region Events
+		/// <summary>
+		/// Fired when the scanning progress is updated.
+		/// </summary>
+		public event ScanProgressHandler Scanning;
+		#endregion
 	}
 }

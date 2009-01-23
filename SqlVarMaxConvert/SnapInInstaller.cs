@@ -7,11 +7,13 @@ using System.Security.Permissions;
 
 namespace Webcoder.SqlServer.SqlVarMaxConvert
 {
-    /// <summary>
+	#region Public Constructors
+	/// <summary>
     /// The RunInstaller attribute allows the .Net framework to install the assembly.
     /// </summary>
     [RunInstaller(true)]
     public class InstallUtilSupport : SnapInInstaller
     {
     }
+	#endregion
 }

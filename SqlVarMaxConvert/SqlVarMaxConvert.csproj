@@ -49,6 +49,7 @@
       <DependentUpon>ConnectServerDialog.cs</DependentUpon>
     </Compile>
     <Compile Include="DatabaseNode.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ServerNode.cs" />
     <Compile Include="SnapInInstaller.cs">
       <SubType>Component</SubType>
