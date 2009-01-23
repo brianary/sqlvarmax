@@ -22,7 +22,7 @@ namespace Webcoder.SqlServer.SqlVarMaxConvert
         public RootNode()
         {
             DisplayName = "SQL VarMax Convert";
-            var connect = new SyncAction("Connect...", "Connect to a database server.");
+            var connect = new SyncAction("Co&nnect...", "Connect to a database server.");
             connect.Triggered += new SyncAction.SyncActionEventHandler(ConnectActionTriggered);
             ActionsPaneItems.Add(connect);
         }
