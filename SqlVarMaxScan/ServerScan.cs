@@ -29,6 +29,11 @@ namespace Webcoder.SqlServer.SqlVarMaxScan
 		/// The list of columns on the server, for all databases, that use deprecated data types.
 		/// </summary>
 		public List<MaxableColumn> MaxableColumns = new List<MaxableColumn>();
+
+		/// <summary>
+		/// The list of parameters on the server, for all databases, that use deprecated data types.
+		/// </summary>
+		public List<MaxableParameter> MaxableParameters = new List<MaxableParameter>();
 		#endregion
 
 		#region Public Properties
@@ -39,15 +44,6 @@ namespace Webcoder.SqlServer.SqlVarMaxScan
 		{
 			get { return DatabaseScans.Count > 0; }
 		}
-		#endregion
-
-		#region Public Delegates
-		/// <summary>
-		/// A handler for a scanning progress update event.
-		/// </summary>
-		/// <param name="sender">The object that caused the event.</param>
-		/// <param name="e">The event details.</param>
-		public delegate void ScanProgressHandler(object sender, ScanProgressEventArgs e);
 		#endregion
 
 		#region Public Constructors
@@ -67,17 +63,19 @@ namespace Webcoder.SqlServer.SqlVarMaxScan
 		/// </summary>
 		public void PerformScan()
 		{
-			int db = 0, dbcount = Server.Databases.Count;
-			string statusmessage = "Scanning " + Server.Name + ": ";
-			foreach (Database database in Server.Databases) //TODO: if(!database.IsSystemObject)
+			int done = 0, total = Server.Databases.Count;
+			string statusmessage = "Scanning ";
+			foreach (Database database in Server.Databases) if(!database.IsSystemObject)
 			{
 				var dbscan = new DatabaseScan(database);
-				Scanning(this, new ScanProgressEventArgs(statusmessage + database.Name, db++, dbcount));
+				Scanning(this, new ScanProgressEventArgs(statusmessage + database.Name, done++, total));
+				dbscan.Scanning+= new DatabaseScan.ScanProgressHandler(DatabaseScanning);
 				dbscan.PerformScan();
 				if (dbscan.HasMaxables)
 				{
 					DatabaseScans.Add(dbscan);
 					MaxableColumns.AddRange(dbscan.MaxableColumns);
+					MaxableParameters.AddRange(dbscan.MaxableParameters);
 				}
 			}
 		}
@@ -102,11 +100,32 @@ namespace Webcoder.SqlServer.SqlVarMaxScan
 		public static IEnumerable<string> EnumAvailableSqlServers()
 		{
 			var serverlist = new List<string>();
-			using (var servers = SmoApplication.EnumAvailableSqlServers())
+			using (var servers = SmoApplication.EnumAvailableSqlServers(true)) //TODO: remove local only flag
 				foreach (DataRow found in servers.Rows)
 					serverlist.Add((string)found["Name"]);
 			return serverlist;
 		}
+		#endregion
+
+		#region Event Handlers
+		/// <summary>
+		/// Called when the progress of the scan changes.
+		/// </summary>
+		/// <param name="sender">The source of the event.</param>
+		/// <param name="e">The details of the event.</param>
+		public void DatabaseScanning(object sender, ScanProgressEventArgs e)
+		{
+			Scanning(sender, e);
+		}
+		#endregion
+
+		#region Public Delegates
+		/// <summary>
+		/// A handler for a scanning progress update event.
+		/// </summary>
+		/// <param name="sender">The object that caused the event.</param>
+		/// <param name="e">The event details.</param>
+		public delegate void ScanProgressHandler(object sender, ScanProgressEventArgs e);
 		#endregion
 
 		#region Events

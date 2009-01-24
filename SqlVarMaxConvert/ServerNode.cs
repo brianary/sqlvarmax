@@ -31,13 +31,18 @@ namespace Webcoder.SqlServer.SqlVarMaxConvert
 			Tag = serverscan;
 			serverscan.Scanning += new ServerScan.ScanProgressHandler(Scanning);
 			serverscan.PerformScan();
+			Status.Complete("Scan complete.", true);
             foreach (var databasescan in serverscan.DatabaseScans)
 				Children.Add(new DatabaseNode(databasescan));
 			ViewDescriptions.AddRange(new MmcListViewDescription[] { 
 				new MmcListViewDescription()
-                { DisplayName= "Database Columns", ViewType= typeof(ColumnsListView), 
+                { DisplayName= "All Database Columns", ViewType= typeof(ColumnsListView), 
+                    Options= MmcListViewOptions.ExcludeScopeNodes },
+				new MmcListViewDescription()
+                { DisplayName= "All Database Parameters", ViewType= typeof(ParametersListView), 
                     Options= MmcListViewOptions.ExcludeScopeNodes },
 			});
+			ViewDescriptions.DefaultIndex = 0;
 		}
         #endregion
 
@@ -49,6 +54,8 @@ namespace Webcoder.SqlServer.SqlVarMaxConvert
 		/// <param name="e">The details of the event.</param>
 		public void Scanning(object sender, ScanProgressEventArgs e)
 		{
+			if (Status.IsCancelSignaled)
+				Status.Complete("The scan has been cancelled.", false);
 			Status.ReportProgress(e.WorkComplete, e.TotalWork, e.StatusMessage);
 		}
 		#endregion

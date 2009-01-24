@@ -8,7 +8,7 @@
     <ProjectGuid>{34454E4E-83F5-4E51-A450-17AF4256C200}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>SqlVarMaxScan</RootNamespace>
+    <RootNamespace>Webcoder.SqlServer.SqlVarMaxScan</RootNamespace>
     <AssemblyName>SqlVarMaxScan</AssemblyName>
     <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
@@ -49,6 +49,7 @@
     <Compile Include="DatabaseScan.cs" />
     <Compile Include="DataTypeExtension.cs" />
     <Compile Include="MaxableColumn.cs" />
+    <Compile Include="MaxableParameter.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ScanProgressEventArgs.cs" />
     <Compile Include="ServerScan.cs" />

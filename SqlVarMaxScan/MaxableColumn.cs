@@ -18,7 +18,7 @@ namespace Webcoder.SqlServer.SqlVarMaxScan
 		/// <summary>
 		/// The schema name of the table.
 		/// </summary>
-		public readonly string TableSchema;
+		public readonly string SchemaName;
 
 		/// <summary>
 		/// The name of the table.
@@ -83,15 +83,19 @@ namespace Webcoder.SqlServer.SqlVarMaxScan
 
 		#region Public Constructors
 		/// <summary>
-		/// The constructor, which notes the location and statistical data about the column, and builds the SQL conversion script.
+		/// The constructor, which notes the location of, and statistical data about, the column, 
+		/// and builds the SQL conversion script.
 		/// </summary>
 		/// <param name="column">The database column to convert.</param>
 		public MaxableColumn(Column column)
 		{
 			Table table = column.Parent as Table;
-			Database database = table.Parent as Database;
+			if (table == null)
+				throw new ArgumentException("Column argument must be a table column. Column passed has a parent of type "
+					+ column.Parent.GetType().FullName);
+			Database database = table.Parent;
 			DatabaseName = database.Name;
-			TableSchema = table.Schema;
+			SchemaName = table.Schema;
 			TableName = table.Name;
 			ColumnName = column.Name;
 			DataType currentdatatype = column.DataType;
@@ -109,12 +113,12 @@ namespace Webcoder.SqlServer.SqlVarMaxScan
 			Nullability = Nullable ? "null" : "not null";
 			SqlConversionString = String.Format("alter table [{0}].[{1}].[{2}] alter column [{3}] {4} {5}; -- was {6}\nGO\n"
 					+ "update [{0}].[{1}].[{2}] set [{3}]= [{3}]\nGO\n",
-					DatabaseName, TableSchema, TableName, ColumnName, MaxDataTypeName, Nullability, CurrentDataTypeName);
+					DatabaseName, SchemaName, TableName, ColumnName, MaxDataTypeName, Nullability, CurrentDataTypeName);
 			var stats = database.ExecuteWithResults(String.Format("select count(*) as [RowCount], "
 				+"(select count(*) from [{0}].[{1}] where datalength([{2}]) < 8000) as [RowsUnder8000BytesCount], "
 				+ "coalesce(min(datalength([{2}])),0) as [MinDataLength], coalesce(avg(datalength([{2}])),0) as [AvgDataLength], "
 				+ "coalesce(max(datalength([{2}])),0) as [MaxDataLength] "
-				+ "from [{0}].[{1}]", TableSchema, TableName, ColumnName)).Tables[0].Rows[0];
+				+ "from [{0}].[{1}]", SchemaName, TableName, ColumnName)).Tables[0].Rows[0];
 			RowCount = (int)stats["RowCount"];
 			RowsUnder8000BytesCount = (int)stats["RowsUnder8000BytesCount"];
 			MinDataLength = (int)stats["MinDataLength"];
