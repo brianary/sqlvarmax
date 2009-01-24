@@ -100,7 +100,7 @@ namespace Webcoder.SqlServer.SqlVarMaxScan
 		public static IEnumerable<string> EnumAvailableSqlServers()
 		{
 			var serverlist = new List<string>();
-			using (var servers = SmoApplication.EnumAvailableSqlServers(true)) //TODO: remove local only flag
+			using (var servers = SmoApplication.EnumAvailableSqlServers())
 				foreach (DataRow found in servers.Rows)
 					serverlist.Add((string)found["Name"]);
 			return serverlist;

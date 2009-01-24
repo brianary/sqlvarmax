@@ -14,6 +14,11 @@ namespace Webcoder.SqlServer.SqlVarMaxScan
 		/// The database to scan.
 		/// </summary>
 		Database Database;
+
+		/// <summary>
+		/// A list of stored procedures that contain maxable types.
+		/// </summary>
+		List<StoredProcedure> StoredProcedures = new List<StoredProcedure>();
 		#endregion
 
 		#region Public Fields
@@ -73,7 +78,12 @@ namespace Webcoder.SqlServer.SqlVarMaxScan
 			foreach (StoredProcedure storedprocedure in Database.StoredProcedures) //TODO: if(!storedprocedure.IsSystemObject)
 			{
 				Scanning(this, new ScanProgressEventArgs(statusmessage + storedprocedure.Name, done++, total));
-				MaxableParameters.AddRange(MaxableParameter.FindMaxableParameters(storedprocedure.Parameters));
+				var maxparams = MaxableParameter.FindMaxableParameters(storedprocedure.Parameters);
+				if (maxparams.Count > 0)
+				{
+					StoredProcedures.Add(storedprocedure);
+					MaxableParameters.AddRange(maxparams);
+				}
 			}
 		}
 
