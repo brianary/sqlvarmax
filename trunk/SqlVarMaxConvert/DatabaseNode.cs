@@ -24,8 +24,12 @@ namespace Webcoder.SqlServer.SqlVarMaxConvert
 				new MmcListViewDescription()
                 { DisplayName= "Database Columns", ViewType= typeof(ColumnsListView), 
                     Options= MmcListViewOptions.ExcludeScopeNodes },
+				new MmcListViewDescription()
+                { DisplayName= "Database Parameters", ViewType= typeof(ParametersListView), 
+                    Options= MmcListViewOptions.ExcludeScopeNodes },
 			});
-        }
+			ViewDescriptions.DefaultIndex = 0;
+		}
         #endregion
     }
 }

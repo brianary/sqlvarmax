@@ -21,6 +21,11 @@ namespace Webcoder.SqlServer.SqlVarMaxScan
 		/// The list of columns that use a deprecated data type.
 		/// </summary>
 		public List<MaxableColumn> MaxableColumns = new List<MaxableColumn>();
+
+		/// <summary>
+		/// The list of parameters that use a deprecated data type.
+		/// </summary>
+		public List<MaxableParameter> MaxableParameters = new List<MaxableParameter>();
 		#endregion
 
 		#region Public Properties
@@ -37,7 +42,7 @@ namespace Webcoder.SqlServer.SqlVarMaxScan
 		/// </summary>
 		public bool HasMaxables
 		{
-			get { return MaxableColumns.Count > 0; }
+			get { return MaxableColumns.Count > 0 || MaxableParameters.Count > 0; }
 		}
 		#endregion
 
@@ -58,8 +63,18 @@ namespace Webcoder.SqlServer.SqlVarMaxScan
 		/// </summary>
 		public void PerformScan()
 		{
+			int done = 0, total = Database.Tables.Count + Database.StoredProcedures.Count;
+			string statusmessage = "Scanning " + Database.Name + ": ";
 			foreach (Table table in Database.Tables) //TODO: if(!table.IsSystemObject)
+			{
+				Scanning(this, new ScanProgressEventArgs(statusmessage + table.Name, done++, total));
 				MaxableColumns.AddRange(MaxableColumn.FindMaxableColumns(table.Columns));
+			}
+			foreach (StoredProcedure storedprocedure in Database.StoredProcedures) //TODO: if(!storedprocedure.IsSystemObject)
+			{
+				Scanning(this, new ScanProgressEventArgs(statusmessage + storedprocedure.Name, done++, total));
+				MaxableParameters.AddRange(MaxableParameter.FindMaxableParameters(storedprocedure.Parameters));
+			}
 		}
 
 		/// <summary>
@@ -72,8 +87,26 @@ namespace Webcoder.SqlServer.SqlVarMaxScan
 			sql.AppendFormat("use [{0}]\nGO\n-- Columns\n", Database.Name);
 			foreach (var maxcol in MaxableColumns)
 				sql.Append(maxcol.SqlConversionString);
+			foreach (var maxparam in MaxableParameters)
+				sql.Append(maxparam.SqlConversionString);
 			return sql.ToString();
 		}
+		#endregion
+
+		#region Public Delegates
+		/// <summary>
+		/// A handler for a scanning progress update event.
+		/// </summary>
+		/// <param name="sender">The object that caused the event.</param>
+		/// <param name="e">The event details.</param>
+		public delegate void ScanProgressHandler(object sender, ScanProgressEventArgs e);
+		#endregion
+
+		#region Events
+		/// <summary>
+		/// Fired when the scanning progress is updated.
+		/// </summary>
+		public event ScanProgressHandler Scanning;
 		#endregion
 	}
 }

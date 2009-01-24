@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using System.Collections.Generic;
 using Microsoft.ManagementConsole;
 using Webcoder.SqlServer.SqlVarMaxScan;
 
@@ -50,7 +48,7 @@ namespace Webcoder.SqlServer.SqlVarMaxConvert
 				if (ScopeNode.Tag is ServerScan)
 					colnode.SubItemDisplayNames.Add(maxcol.DatabaseName);
 				colnode.SubItemDisplayNames.AddRange(new string[] {
-					maxcol.TableSchema, maxcol.TableName, maxcol.CurrentDataTypeName, maxcol.MaxDataTypeName,
+					maxcol.SchemaName, maxcol.TableName, maxcol.CurrentDataTypeName, maxcol.MaxDataTypeName,
 					maxcol.RowCount.ToString("N0"), maxcol.RowsUnder8000BytesCount.ToString("N0"),
 					maxcol.MinDataLength.ToString("N0"), maxcol.AvgDataLength.ToString("N0"), maxcol.MaxDataLength.ToString("N0"),
 				});

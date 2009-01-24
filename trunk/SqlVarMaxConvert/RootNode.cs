@@ -36,11 +36,10 @@ namespace Webcoder.SqlServer.SqlVarMaxConvert
         /// <param name="e">The action arguments, containing the action object and a sync status object.</param>
         public void ConnectActionTriggered(object sender, SyncActionEventArgs e)
         {
-            e.Status.CanCancel = false;
-            e.Status.Title = "Connecting...";
+            e.Status.Title = "Server Connect";
             connectServerDialog.ShowDialog();
             if (connectServerDialog.DialogResult != DialogResult.OK) return;
-            e.Status.Title = "Connecting to " + connectServerDialog.ServerSelected + "...";
+            e.Status.Title = "Scanning " + connectServerDialog.ServerSelected.ToUpper();
             Children.Add(new ServerNode(connectServerDialog.ServerSelected, e.Status));
         }
         #endregion
