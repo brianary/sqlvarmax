@@ -9,9 +9,16 @@ namespace Webcoder.SqlServer.SqlVarMaxConvert
     /// The server connect dialog.
     /// </summary>
     public partial class ConnectServerDialog : Form
-    {
-        #region Public Properties
-        /// <summary>
+	{
+		#region Private Fields
+		/// <summary>
+		/// Keeps track of whether the servers listed in the dropdown have been enumerated.
+		/// </summary>
+		private bool ServersEnumerated = false;
+		#endregion
+
+		#region Public Properties
+		/// <summary>
         /// The server that was selected by the user, null if no selection was made.
         /// </summary>
         public string ServerSelected { get; set; }
@@ -35,9 +42,7 @@ namespace Webcoder.SqlServer.SqlVarMaxConvert
         /// <param name="e">Not used.</param>
         private void ConnectServerDialog_Load(object sender, EventArgs e)
         {
-            ServerSelection.Items.Clear();
-            foreach(var server in ServerScan.EnumAvailableSqlServers())
-                ServerSelection.Items.Add(server);
+			Activate();
         }
 
         /// <summary>
@@ -49,6 +54,22 @@ namespace Webcoder.SqlServer.SqlVarMaxConvert
         {
             OkButton.Enabled = !String.IsNullOrEmpty(ServerSelection.Text);
         }
+
+		/// <summary>
+		/// Populates the dropdown list, the first time it is opened, with the list of potential servers.
+		/// </summary>
+		/// <param name="sender">The combobox object.</param>
+		/// <param name="e">Not used.</param>
+		private void ServerSelection_DropDown(object sender, EventArgs e)
+		{
+			if (!ServersEnumerated)
+			{
+				foreach(var server in ServerScan.EnumAvailableSqlServers())
+					ServerSelection.Items.Add(server);
+				ServersEnumerated = true;
+				Activate();
+			}
+		}
 
         /// <summary>
         /// The OK button was pressed.

@@ -53,6 +53,7 @@
 			this.ServerSelection.Sorted = true;
 			this.ServerSelection.TabIndex = 1;
 			this.ServerSelection.ValueMember = "Name";
+			this.ServerSelection.DropDown += new System.EventHandler(this.ServerSelection_DropDown);
 			this.ServerSelection.TextChanged += new System.EventHandler(this.ServerSelection_TextChanged);
 			// 
 			// OkButton

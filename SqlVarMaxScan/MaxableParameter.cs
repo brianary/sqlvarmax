@@ -1,13 +1,22 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using Microsoft.SqlServer.Management.Smo;
 
 namespace Webcoder.SqlServer.SqlVarMaxScan
 {
 	public struct MaxableParameter
 	{
+		#region Private Fields
+		/// <summary>
+		/// Used to strip off the creation header of the subroutine.
+		/// </summary>
+		private static readonly Regex CreateHeader= new
+			Regex(@"\A\s*CREATE\s+(?<object>proc(?:edure)|function)\s+(?<schema>\[[^\]]+\].|\w+.)?",
+				RegexOptions.IgnoreCase|RegexOptions.Compiled);
+		#endregion
+
 		#region Public Fields
 		/// <summary>
 		/// The name of the database.
@@ -67,10 +76,12 @@ namespace Webcoder.SqlServer.SqlVarMaxScan
 		/// <param name="column">The database column to convert.</param>
 		public MaxableParameter(StoredProcedureParameter parameter)
 		{
-			DatabaseName = parameter.Parent.Parent.Name;
-			SchemaName = parameter.Parent.Schema;
-			SubroutineName = parameter.Parent.Name;
-			SubroutineType= parameter.Parent.GetType();
+			StoredProcedure storedprocedure= parameter.Parent;
+			Database database = storedprocedure.Parent;
+			DatabaseName = database.Name;
+			SchemaName = storedprocedure.Schema;
+			SubroutineName = storedprocedure.Name;
+			SubroutineType= storedprocedure.GetType();
 			SubroutineSpecies = SubroutineType.Name;
 			ParameterName = parameter.Name;
 			DataType currentdatatype = parameter.DataType;
@@ -85,7 +96,17 @@ namespace Webcoder.SqlServer.SqlVarMaxScan
 			}
 			MaxDataTypeName = maxdatatype.ToSqlString();
 			ParameterDirectionName = parameter.IsOutputParameter ? "output" : "input";
-			SqlConversionString = ""; // TODO: convert parameter
+			if (storedprocedure.TextMode)
+			{
+				StringBuilder sql = new StringBuilder(String.Format("ALTER PROC [{0}].", SchemaName));
+				sql.Append(CreateHeader.Replace(storedprocedure.TextHeader, ""));
+				sql.Append(storedprocedure.TextBody);
+				SqlConversionString = sql.ToString();
+			}
+			else
+			{
+				SqlConversionString = "";
+			}
 		}
 		#endregion
 
