@@ -6,15 +6,18 @@ using Microsoft.SqlServer.Management.Smo;
 
 namespace Webcoder.SqlServer.SqlVarMaxScan
 {
+	/// <summary>
+	/// A parameter to a subroutine that uses a deprecated data type.
+	/// </summary>
 	public struct MaxableParameter
 	{
 		#region Private Fields
 		/// <summary>
 		/// Used to strip off the creation header of the subroutine.
 		/// </summary>
-		private static readonly Regex CreateHeader= new
+		private static readonly Regex CreateHeader = new
 			Regex(@"\A\s*CREATE\s+(?<object>proc(?:edure)|function)\s+(?<schema>\[[^\]]+\].|\w+.)?",
-				RegexOptions.IgnoreCase|RegexOptions.Compiled);
+				RegexOptions.IgnoreCase | RegexOptions.Compiled);
 		#endregion
 
 		#region Public Fields
@@ -71,21 +74,21 @@ namespace Webcoder.SqlServer.SqlVarMaxScan
 
 		#region Public Constructors
 		/// <summary>
-		/// The constructor, which notes the location of the column, and builds the SQL conversion script.
+		/// The constructor, which notes the stored procedure of the parameter, and builds the SQL conversion script.
 		/// </summary>
-		/// <param name="column">The database column to convert.</param>
+		/// <param name="parameter">The database column to convert.</param>
 		public MaxableParameter(StoredProcedureParameter parameter)
 		{
-			StoredProcedure storedprocedure= parameter.Parent;
+			StoredProcedure storedprocedure = parameter.Parent;
 			Database database = storedprocedure.Parent;
 			DatabaseName = database.Name;
 			SchemaName = storedprocedure.Schema;
 			SubroutineName = storedprocedure.Name;
-			SubroutineType= storedprocedure.GetType();
+			SubroutineType = storedprocedure.GetType();
 			SubroutineSpecies = SubroutineType.Name;
 			ParameterName = parameter.Name;
 			DataType currentdatatype = parameter.DataType;
-			CurrentDataTypeName = parameter.DataType.ToSqlString();
+			CurrentDataTypeName = currentdatatype.ToSqlString();
 			DataType maxdatatype = DataType.Int;
 			switch (currentdatatype.SqlDataType)
 			{
@@ -99,8 +102,100 @@ namespace Webcoder.SqlServer.SqlVarMaxScan
 			if (storedprocedure.TextMode)
 			{
 				StringBuilder sql = new StringBuilder(String.Format("ALTER PROC [{0}].", SchemaName));
-				sql.Append(CreateHeader.Replace(storedprocedure.TextHeader, ""));
+				sql.Append(Regex.Replace(CreateHeader.Replace(storedprocedure.TextHeader, ""), 
+					Regex.Escape(ParameterName) + @"\s+" + Regex.Escape(CurrentDataTypeName) + @"\b", 
+					ParameterName + " " + MaxDataTypeName, RegexOptions.IgnoreCase));
 				sql.Append(storedprocedure.TextBody);
+				SqlConversionString = sql.ToString();
+			}
+			else
+			{
+				SqlConversionString = "";
+			}
+		}
+
+		/// <summary>
+		/// The constructor, which notes the user defined function of the return value
+		/// </summary>
+		/// <param name="function">The user defined function with a return to convert.</param>
+		public MaxableParameter(UserDefinedFunction udf)
+		{
+			Database database = udf.Parent;
+			DatabaseName = database.Name;
+			SchemaName = udf.Schema;
+			SubroutineName = udf.Name;
+			SubroutineType = udf.GetType();
+			SubroutineSpecies = SubroutineType.Name;
+			ParameterName = "(return value)";
+			ParameterDirectionName = "output";
+			if (udf.FunctionType != UserDefinedFunctionType.Scalar)
+			{
+				CurrentDataTypeName = "(not scalar)";
+				MaxDataTypeName = "(not scalar)";
+				SqlConversionString = "";
+			}
+			else
+			{
+				DataType currentdatatype = udf.DataType;
+				CurrentDataTypeName = currentdatatype.Name;
+				DataType maxdatatype = DataType.Int;
+				switch (currentdatatype.SqlDataType)
+				{
+					case SqlDataType.Image: maxdatatype = new DataType(SqlDataType.VarBinaryMax); break;
+					case SqlDataType.NText: maxdatatype = new DataType(SqlDataType.NVarCharMax); break;
+					case SqlDataType.Text: maxdatatype = new DataType(SqlDataType.VarCharMax); break;
+					default: maxdatatype = currentdatatype; break;
+				}
+				MaxDataTypeName = maxdatatype.ToSqlString();
+				if (udf.TextMode)
+				{
+					StringBuilder sql = new StringBuilder(String.Format("ALTER FUNCTION [{0}].", SchemaName));
+					sql.Append(Regex.Replace(CreateHeader.Replace(udf.TextHeader, ""), 
+						@"\bRETURNS\s+" + Regex.Escape(MaxDataTypeName) + @"\b",
+						"RETURNS " + MaxDataTypeName, RegexOptions.IgnoreCase));
+					sql.Append(udf.TextBody);
+					SqlConversionString = sql.ToString();
+				}
+				else
+				{
+					SqlConversionString = "";
+				}
+			}
+		}
+
+		/// <summary>
+		/// The constructor, which notes the user defined function of the parameter, and builds the SQL conversion script.
+		/// </summary>
+		/// <param name="parameter">The parameter to convert.</param>
+		public MaxableParameter(UserDefinedFunctionParameter parameter)
+		{
+			UserDefinedFunction udf = parameter.Parent;
+			Database database = udf.Parent;
+			DatabaseName = database.Name;
+			SchemaName = udf.Schema;
+			SubroutineName = udf.Name;
+			SubroutineType = udf.GetType();
+			SubroutineSpecies = SubroutineType.Name;
+			ParameterName = parameter.Name;
+			DataType currentdatatype = parameter.DataType;
+			CurrentDataTypeName = currentdatatype.ToSqlString();
+			DataType maxdatatype = DataType.Int;
+			switch (currentdatatype.SqlDataType)
+			{
+				case SqlDataType.Image: maxdatatype = new DataType(SqlDataType.VarBinaryMax); break;
+				case SqlDataType.NText: maxdatatype = new DataType(SqlDataType.NVarCharMax); break;
+				case SqlDataType.Text: maxdatatype = new DataType(SqlDataType.VarCharMax); break;
+				default: maxdatatype = currentdatatype; break;
+			}
+			MaxDataTypeName = maxdatatype.ToSqlString();
+			ParameterDirectionName = "input";
+			if (udf.TextMode)
+			{
+				StringBuilder sql = new StringBuilder(String.Format("ALTER FUNCTION [{0}].", SchemaName));
+				sql.Append(Regex.Replace(CreateHeader.Replace(udf.TextHeader, ""),
+					Regex.Escape(ParameterName) + @"\s+" + Regex.Escape(CurrentDataTypeName) + @"\b",
+					ParameterName + " " + MaxDataTypeName, RegexOptions.IgnoreCase));
+				sql.Append(udf.TextBody);
 				SqlConversionString = sql.ToString();
 			}
 			else
@@ -120,6 +215,26 @@ namespace Webcoder.SqlServer.SqlVarMaxScan
 		{
 			var maxables = new List<MaxableParameter>();
 			foreach (StoredProcedureParameter parameter in parameters)
+				switch (parameter.DataType.SqlDataType)
+				{
+					case SqlDataType.Image:
+					case SqlDataType.NText:
+					case SqlDataType.Text:
+						maxables.Add(new MaxableParameter(parameter));
+						break;
+				}
+			return maxables;
+		}
+
+		/// <summary>
+		/// Searches a collection of parameters, looking for those that can be converted from deprecated data types.
+		/// </summary>
+		/// <param name="parameters">The collection of parameters to search.</param>
+		/// <returns>A list of maxable parameters.</returns>
+		public static List<MaxableParameter> FindMaxableParameters(UserDefinedFunctionParameterCollection parameters)
+		{
+			var maxables = new List<MaxableParameter>();
+			foreach (UserDefinedFunctionParameter parameter in parameters)
 				switch (parameter.DataType.SqlDataType)
 				{
 					case SqlDataType.Image:
