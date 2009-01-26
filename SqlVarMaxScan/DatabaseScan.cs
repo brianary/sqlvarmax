@@ -76,12 +76,12 @@ namespace Webcoder.SqlServer.SqlVarMaxScan
 			int done = 0, total = Database.Tables.Count + Database.StoredProcedures.Count 
 				+ Database.UserDefinedFunctions.Count;
 			string statusmessage = "Scanning " + Database.Name + ": ";
-			foreach (Table table in Database.Tables) //TODO: if(!table.IsSystemObject)
+			foreach (Table table in Database.Tables) if(!table.IsSystemObject)
 			{
 				Scanning(this, new ScanProgressEventArgs(statusmessage + table.Name, done++, total));
 				MaxableColumns.AddRange(MaxableColumn.FindMaxableColumns(table.Columns));
 			}
-			foreach (StoredProcedure storedprocedure in Database.StoredProcedures) //TODO: if(!storedprocedure.IsSystemObject)
+			foreach (StoredProcedure storedprocedure in Database.StoredProcedures) if(!storedprocedure.IsSystemObject)
 			{
 				Scanning(this, new ScanProgressEventArgs(statusmessage + storedprocedure.Name, done++, total));
 				var maxparams = MaxableParameter.FindMaxableParameters(storedprocedure.Parameters);
