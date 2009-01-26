@@ -19,6 +19,11 @@ namespace Webcoder.SqlServer.SqlVarMaxScan
 		/// A list of stored procedures that contain maxable types.
 		/// </summary>
 		List<StoredProcedure> StoredProcedures = new List<StoredProcedure>();
+
+		/// <summary>
+		/// A list of user defined functions that contain maxable types.
+		/// </summary>
+		List<UserDefinedFunction> UserDefinedFunctions = new List<UserDefinedFunction>();
 		#endregion
 
 		#region Public Fields
@@ -68,7 +73,8 @@ namespace Webcoder.SqlServer.SqlVarMaxScan
 		/// </summary>
 		public void PerformScan()
 		{
-			int done = 0, total = Database.Tables.Count + Database.StoredProcedures.Count;
+			int done = 0, total = Database.Tables.Count + Database.StoredProcedures.Count 
+				+ Database.UserDefinedFunctions.Count;
 			string statusmessage = "Scanning " + Database.Name + ": ";
 			foreach (Table table in Database.Tables) //TODO: if(!table.IsSystemObject)
 			{
@@ -82,6 +88,16 @@ namespace Webcoder.SqlServer.SqlVarMaxScan
 				if (maxparams.Count > 0)
 				{
 					StoredProcedures.Add(storedprocedure);
+					MaxableParameters.AddRange(maxparams);
+				}
+			}
+			foreach (UserDefinedFunction udf in Database.UserDefinedFunctions)
+			{
+				Scanning(this, new ScanProgressEventArgs(statusmessage + udf.Name, done++, total));
+				var maxparams = MaxableParameter.FindMaxableParameters(udf.Parameters);
+				if (maxparams.Count > 0)
+				{
+					UserDefinedFunctions.Add(udf);
 					MaxableParameters.AddRange(maxparams);
 				}
 			}
