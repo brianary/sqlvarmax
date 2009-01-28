@@ -71,7 +71,7 @@ namespace Webcoder.SqlServer.SqlVarMaxScan
 		/// <summary>
 		/// Performs the database scan, populating the maxable collections.
 		/// </summary>
-		public void PerformScan()
+		public void PerformScan() //TODO: offer a param to choose what object types to scan
 		{
 			int done = 0, total = Database.Tables.Count + Database.StoredProcedures.Count 
 				+ Database.UserDefinedFunctions.Count;
@@ -94,6 +94,8 @@ namespace Webcoder.SqlServer.SqlVarMaxScan
 			foreach (UserDefinedFunction udf in Database.UserDefinedFunctions)
 			{
 				Scanning(this, new ScanProgressEventArgs(statusmessage + udf.Name, done++, total));
+				if (MaxableParameter.HasMaxableReturnType(udf))
+					MaxableParameters.Add(new MaxableParameter(udf));
 				var maxparams = MaxableParameter.FindMaxableParameters(udf.Parameters);
 				if (maxparams.Count > 0)
 				{
