@@ -245,6 +245,25 @@ namespace Webcoder.SqlServer.SqlVarMaxScan
 				}
 			return maxables;
 		}
+
+		/// <summary>
+		/// Does the user defined function return a maxable type?
+		/// </summary>
+		/// <param name="udf">The user defined function to check.</param>
+		/// <returns>True if the return type for the user defined function is image, ntext, or text, false otherwise.</returns>
+		public static bool HasMaxableReturnType(UserDefinedFunction udf)
+		{
+			if (udf.FunctionType != UserDefinedFunctionType.Scalar)
+				return false;
+			switch (udf.DataType.SqlDataType)
+			{
+				case SqlDataType.Image:
+				case SqlDataType.NText:
+				case SqlDataType.Text:
+					return true;
+			}
+			return false;
+		}
 		#endregion
 	}
 }
