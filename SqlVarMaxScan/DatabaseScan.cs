@@ -88,6 +88,8 @@ namespace Webcoder.SqlServer.SqlVarMaxScan
 			foreach (StoredProcedure storedprocedure in Database.StoredProcedures) if(!storedprocedure.IsSystemObject)
 			{
 				Scanning(this, new ScanProgressEventArgs(statusmessage + storedprocedure.Name, done++, total));
+				//TODO: UsesTextFunctions (if so, cannot scan this item further or add to collection)
+				//TODO: HasMaxableLocalVariable: MaxableParameter or MaxableSubroutine?
 				var maxparams = MaxableParameter.FindMaxableParameters(storedprocedure.Parameters);
 				if (maxparams.Count > 0)
 				{
@@ -98,8 +100,10 @@ namespace Webcoder.SqlServer.SqlVarMaxScan
 			foreach (UserDefinedFunction udf in Database.UserDefinedFunctions)
 			{
 				Scanning(this, new ScanProgressEventArgs(statusmessage + udf.Name, done++, total));
+				//TODO: UsesTextFunctions (if so, cannot scan this item further or add to collection)
+				//TODO: HasMaxableLocalVariable: MaxableParameter or MaxableSubroutine?
 				if (MaxableParameter.HasMaxableReturnType(udf))
-					MaxableParameters.Add(new MaxableParameter(udf));
+					MaxableParameters.Add(new MaxableParameter(udf)); //TODO: MaxableSubroutine?
 				var maxparams = MaxableParameter.FindMaxableParameters(udf.Parameters);
 				if (maxparams.Count > 0)
 				{
@@ -119,6 +123,7 @@ namespace Webcoder.SqlServer.SqlVarMaxScan
 			sql.AppendFormat("use [{0}]\nGO\n-- Columns\n", Database.Name);
 			foreach (var maxcol in MaxableColumns)
 				sql.Append(maxcol.SqlConversionString);
+			//TODO: iterate over subroutines (sprocs and UDFs), with full regex replace
 			foreach (var maxparam in MaxableParameters)
 				sql.Append(maxparam.SqlConversionString);
 			return sql.ToString();
