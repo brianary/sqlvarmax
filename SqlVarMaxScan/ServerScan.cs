@@ -14,6 +14,11 @@ namespace Webcoder.SqlServer.SqlVarMaxScan
 	{
 		#region Private Fields
 		/// <summary>
+		/// The name of the server, as passed to the constructor.
+		/// </summary>
+		string ServerName;
+
+		/// <summary>
 		/// The server to scan.
 		/// </summary>
 		Server Server;
@@ -38,6 +43,14 @@ namespace Webcoder.SqlServer.SqlVarMaxScan
 
 		#region Public Properties
 		/// <summary>
+		/// The name of the server to scan.
+		/// </summary>
+		public string Name
+		{
+			get { return ServerName; }
+		}
+
+		/// <summary>
 		/// Does this server contain objects that use deprecated data types?
 		/// </summary>
 		public bool HasMaxables
@@ -53,6 +66,7 @@ namespace Webcoder.SqlServer.SqlVarMaxScan
 		/// <param name="server">The server name or name\instance.</param>
 		public ServerScan(string server)
 		{
+			ServerName = server;
 			Server = new Server(server);
 		}
 		#endregion
@@ -65,6 +79,9 @@ namespace Webcoder.SqlServer.SqlVarMaxScan
 		{
 			int done = 0, total = Server.Databases.Count;
 			string statusmessage = "Scanning ";
+			DatabaseScans.Clear();
+			MaxableColumns.Clear();
+			MaxableParameters.Clear();
 			foreach (Database database in Server.Databases) if(!database.IsSystemObject)
 			{
 				var dbscan = new DatabaseScan(database);

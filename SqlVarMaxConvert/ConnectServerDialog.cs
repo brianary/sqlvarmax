@@ -78,7 +78,7 @@ namespace Webcoder.SqlServer.SqlVarMaxConvert
         /// <param name="e">The event details.</param>
         private void OkButton_Click(object sender, EventArgs e)
         {
-            ServerSelected = ServerSelection.Text;
+			ServerSelected = ServerSelection.Text.ToUpper();
             ServerSelection.Text = "";
             DialogResult = DialogResult.OK;
             Hide();

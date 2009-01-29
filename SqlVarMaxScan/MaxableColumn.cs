@@ -7,8 +7,15 @@ namespace Webcoder.SqlServer.SqlVarMaxScan
 	/// <summary>
 	/// A column that uses a deprecated data type, and is a candidate for conversion to the new var*(max) data types.
 	/// </summary>
-	public struct MaxableColumn
+	public struct MaxableColumn //TODO: change to class, inherit new MaxableItem
 	{
+		#region Private Fields
+		/// <summary>
+		/// The database this column is contained within.
+		/// </summary>
+		Database Database;
+		#endregion
+
 		#region Public Fields
 		/// <summary>
 		/// The name of the database.
@@ -93,8 +100,8 @@ namespace Webcoder.SqlServer.SqlVarMaxScan
 			if (table == null)
 				throw new ArgumentException("Column argument must be a table column. Column passed has a parent of type "
 					+ column.Parent.GetType().FullName);
-			Database database = table.Parent;
-			DatabaseName = database.Name;
+			Database = table.Parent;
+			DatabaseName = Database.Name;
 			SchemaName = table.Schema;
 			TableName = table.Name;
 			ColumnName = column.Name;
@@ -114,7 +121,7 @@ namespace Webcoder.SqlServer.SqlVarMaxScan
 			SqlConversionString = String.Format("alter table [{0}].[{1}].[{2}] alter column [{3}] {4} {5}; -- was {6}\nGO\n"
 					+ "update [{0}].[{1}].[{2}] set [{3}]= [{3}]\nGO\n",
 					DatabaseName, SchemaName, TableName, ColumnName, MaxDataTypeName, Nullability, CurrentDataTypeName);
-			var stats = database.ExecuteWithResults(String.Format("select count(*) as [RowCount], "
+			var stats = Database.ExecuteWithResults(String.Format("select count(*) as [RowCount], "
 				+"(select count(*) from [{0}].[{1}] where datalength([{2}]) < 8000) as [RowsUnder8000BytesCount], "
 				+ "coalesce(min(datalength([{2}])),0) as [MinDataLength], coalesce(avg(datalength([{2}])),0) as [AvgDataLength], "
 				+ "coalesce(max(datalength([{2}])),0) as [MaxDataLength] "
@@ -146,6 +153,14 @@ namespace Webcoder.SqlServer.SqlVarMaxScan
 						break;
 				}
 			return maxables;
+		}
+
+		/// <summary>
+		/// Convert the column.
+		/// </summary>
+		public void ExecuteConversion()
+		{
+			Database.ExecuteNonQuery(SqlConversionString);
 		}
 		#endregion
 	}

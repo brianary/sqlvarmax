@@ -9,9 +9,14 @@ namespace Webcoder.SqlServer.SqlVarMaxScan
 	/// <summary>
 	/// A parameter to a subroutine that uses a deprecated data type.
 	/// </summary>
-	public struct MaxableParameter
+	public struct MaxableParameter //TODO: change to class, inherit new MaxableItem
 	{
 		#region Private Fields
+		/// <summary>
+		/// The database this parameter is contained within.
+		/// </summary>
+		Database Database;
+
 		/// <summary>
 		/// Used to strip off the creation header of the subroutine.
 		/// </summary>
@@ -80,8 +85,8 @@ namespace Webcoder.SqlServer.SqlVarMaxScan
 		public MaxableParameter(StoredProcedureParameter parameter)
 		{
 			StoredProcedure storedprocedure = parameter.Parent;
-			Database database = storedprocedure.Parent;
-			DatabaseName = database.Name;
+			Database = storedprocedure.Parent;
+			DatabaseName = Database.Name;
 			SchemaName = storedprocedure.Schema;
 			SubroutineName = storedprocedure.Name;
 			SubroutineType = storedprocedure.GetType();
@@ -120,8 +125,8 @@ namespace Webcoder.SqlServer.SqlVarMaxScan
 		/// <param name="function">The user defined function with a return to convert.</param>
 		public MaxableParameter(UserDefinedFunction udf)
 		{
-			Database database = udf.Parent;
-			DatabaseName = database.Name;
+			Database = udf.Parent;
+			DatabaseName = Database.Name;
 			SchemaName = udf.Schema;
 			SubroutineName = udf.Name;
 			SubroutineType = udf.GetType();
@@ -170,8 +175,8 @@ namespace Webcoder.SqlServer.SqlVarMaxScan
 		public MaxableParameter(UserDefinedFunctionParameter parameter)
 		{
 			UserDefinedFunction udf = parameter.Parent;
-			Database database = udf.Parent;
-			DatabaseName = database.Name;
+			Database = udf.Parent;
+			DatabaseName = Database.Name;
 			SchemaName = udf.Schema;
 			SubroutineName = udf.Name;
 			SubroutineType = udf.GetType();
@@ -263,6 +268,14 @@ namespace Webcoder.SqlServer.SqlVarMaxScan
 					return true;
 			}
 			return false;
+		}
+
+		/// <summary>
+		/// Convert the parameter.
+		/// </summary>
+		public void ExecuteConversion()
+		{
+			Database.ExecuteNonQuery(SqlConversionString);
 		}
 		#endregion
 	}

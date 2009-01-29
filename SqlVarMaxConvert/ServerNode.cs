@@ -9,17 +9,31 @@ namespace Webcoder.SqlServer.SqlVarMaxConvert
     /// <summary>
     /// A server node of the snap-in.
     /// </summary>
-    public class ServerNode : ScopeNode
+	public class ServerNode : ScopeNode, IRefreshableNode //TODO: scrap IRefreshableNode, inherit from new ScanNode
 	{
 		#region Private Fields
 		/// <summary>
 		/// Used to report the status of the long operation to the user.
 		/// </summary>
-		SyncStatus Status;
+		private Status Status;
 		#endregion
 
-        #region Public Constructors
-        /// <summary>
+		#region Private Methods
+		/// <summary>
+		/// Performs the server scan, and builds the child nodes.
+		/// </summary>
+		private void Refresh()
+		{
+			ServerScan serverscan = (ServerScan)Tag;
+			serverscan.PerformScan();
+			foreach (var databasescan in serverscan.DatabaseScans)
+				Children.Add(new DatabaseNode(databasescan));
+			Status.Complete("Scan complete.", true);
+		}
+		#endregion
+
+		#region Public Constructors
+		/// <summary>
         /// Constructs the ServerNode, given the server name.
         /// </summary>
         /// <param name="server">The server name.</param>
@@ -30,10 +44,6 @@ namespace Webcoder.SqlServer.SqlVarMaxConvert
             var serverscan = new ServerScan(servername);
 			Tag = serverscan;
 			serverscan.Scanning += new ServerScan.ScanProgressHandler(Scanning);
-			serverscan.PerformScan();
-			Status.Complete("Scan complete.", true);
-            foreach (var databasescan in serverscan.DatabaseScans)
-				Children.Add(new DatabaseNode(databasescan));
 			ViewDescriptions.AddRange(new MmcListViewDescription[] { 
 				new MmcListViewDescription()
                 { DisplayName= "All Database Columns", ViewType= typeof(ColumnsListView), 
@@ -43,18 +53,43 @@ namespace Webcoder.SqlServer.SqlVarMaxConvert
                     Options= MmcListViewOptions.ExcludeScopeNodes },
 			});
 			ViewDescriptions.DefaultIndex = 0;
+			EnabledStandardVerbs = StandardVerbs.Refresh;
+			Refresh();
 		}
         #endregion
 
+		#region Public Methods
+		/// <summary>
+		/// Rescans the server, and rebuilds the child nodes.
+		/// </summary>
+		/// <param name="status">Status for updating the console.</param>
+		public void Refresh(AsyncStatus status)
+		{
+			OnRefresh(status);
+		}
+		#endregion
+
 		#region Event Handlers
+		/// <summary>
+		/// Rescans the server, and rebuilds the child nodes.
+		/// </summary>
+		/// <param name="status">Status for updating the console.</param>
+		protected override void OnRefresh(AsyncStatus status)
+		{
+			base.OnRefresh(status);
+			Status = status;
+			Status.Title = "Refresh " + ((ServerScan)Tag).Name;
+			Refresh();
+		}
+
 		/// <summary>
 		/// Called when the progress of the scan changes.
 		/// </summary>
 		/// <param name="sender">The source of the event.</param>
 		/// <param name="e">The details of the event.</param>
-		public void Scanning(object sender, ScanProgressEventArgs e)
+		protected void Scanning(object sender, ScanProgressEventArgs e)
 		{
-			if (Status.IsCancelSignaled)
+			if (Status is SyncStatus && ((SyncStatus)Status).IsCancelSignaled)
 				Status.Complete("The scan has been cancelled.", false);
 			Status.ReportProgress(e.WorkComplete, e.TotalWork, e.StatusMessage);
 		}
