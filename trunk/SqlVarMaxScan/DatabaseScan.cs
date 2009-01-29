@@ -75,7 +75,11 @@ namespace Webcoder.SqlServer.SqlVarMaxScan
 		{
 			int done = 0, total = Database.Tables.Count + Database.StoredProcedures.Count 
 				+ Database.UserDefinedFunctions.Count;
-			string statusmessage = "Scanning " + Database.Name + ": ";
+			string statusmessage = Database.Name + ": ";
+			StoredProcedures.Clear();
+			UserDefinedFunctions.Clear();
+			MaxableParameters.Clear();
+			MaxableColumns.Clear();
 			foreach (Table table in Database.Tables) if(!table.IsSystemObject)
 			{
 				Scanning(this, new ScanProgressEventArgs(statusmessage + table.Name, done++, total));

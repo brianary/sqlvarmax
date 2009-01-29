@@ -39,7 +39,7 @@ namespace Webcoder.SqlServer.SqlVarMaxConvert
             e.Status.Title = "Server Connect";
             connectServerDialog.ShowDialog();
             if (connectServerDialog.DialogResult != DialogResult.OK) return;
-            e.Status.Title = "Scanning " + connectServerDialog.ServerSelected.ToUpper();
+            e.Status.Title = "Scanning " + connectServerDialog.ServerSelected;
             Children.Add(new ServerNode(connectServerDialog.ServerSelected, e.Status));
         }
         #endregion
