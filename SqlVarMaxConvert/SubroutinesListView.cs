@@ -1,13 +1,15 @@
-﻿using Microsoft.ManagementConsole;
-using Webcoder.SqlServer.SqlVarMaxScan;
+﻿using System;
 using System.Collections.Generic;
+using System.Text;
+using Microsoft.ManagementConsole;
+using Webcoder.SqlServer.SqlVarMaxScan;
 
 namespace Webcoder.SqlServer.SqlVarMaxConvert
 {
 	/// <summary>
-	/// Displays a list of maxable columns in the results pane.
+	/// Displays a list of subroutines that use deprecated datatypes internally, in the results pane.
 	/// </summary>
-	public class ParametersListView : MaxableListView
+	public class SubroutinesListView : MaxableListView
 	{
 		#region Protected Methods
 		/// <summary>
@@ -15,33 +17,33 @@ namespace Webcoder.SqlServer.SqlVarMaxConvert
 		/// </summary>
 		private void Resync()
 		{
-			List<MaxableParameter> parameters;
+			List<MaxableSubroutine> subroutines;
 			if (ScopeNode.Tag is DatabaseScan)
 			{
 				DatabaseScan scan = (DatabaseScan)ScopeNode.Tag;
-				parameters = scan.MaxableParameters;
-				DescriptionBarText = scan.Name + " parameters";
+				subroutines = scan.MaxableSubroutines;
+				DescriptionBarText = scan.Name + " stored procedures or user-defined functions";
 			}
 			else if (ScopeNode.Tag is ServerScan)
 			{
 				ServerScan scan = (ServerScan)ScopeNode.Tag;
-				parameters = scan.MaxableParameters;
-				DescriptionBarText = scan.Name + " parameters";
+				subroutines = scan.MaxableSubroutines;
+				DescriptionBarText = scan.Name + " stored procedures or user-defined functions";
 			}
 			else
 			{
-				parameters = new List<MaxableParameter>();
-				DescriptionBarText = "No parameters";
+				subroutines = new List<MaxableSubroutine>();
+				DescriptionBarText = "No stored procedures or user-defined functions";
 			}
 			ResultNodes.Clear();
-			foreach (var maxparam in parameters)
+			foreach (var subroutine in subroutines)
 			{
-				var paramnode = new ResultNode() { DisplayName = maxparam.ParameterName, Tag = maxparam };
+				var paramnode = new ResultNode() { DisplayName = subroutine.SubroutineName, Tag = subroutine };
 				if (ScopeNode.Tag is ServerScan)
-					paramnode.SubItemDisplayNames.Add(maxparam.DatabaseName);
+					paramnode.SubItemDisplayNames.Add(subroutine.DatabaseName);
 				paramnode.SubItemDisplayNames.AddRange(new string[] {
-					maxparam.SchemaName, maxparam.SubroutineName, maxparam.SubroutineSpecies, 
-					maxparam.CurrentDataTypeName, maxparam.MaxDataTypeName, maxparam.ParameterDirectionName,
+					subroutine.SchemaName, subroutine.SubroutineSpecies, 
+					subroutine.CurrentDataTypeName, subroutine.MaxDataTypeName, subroutine.SubroutineSymptom,
 				});
 				ResultNodes.Add(paramnode);
 			}
@@ -50,25 +52,24 @@ namespace Webcoder.SqlServer.SqlVarMaxConvert
 
 		#region Event Handlers
 		/// <summary>
-        /// Defines the structure of the list view.
-        /// </summary>
-        /// <param name="status">Status for updating the console.</param>
+		/// Defines the structure of the list view.
+		/// </summary>
+		/// <param name="status">Status for updating the console.</param>
 		protected override void OnInitialize(AsyncStatus status)
 		{
 			base.OnInitialize(status);
 			Mode = MmcListViewMode.Report;
 			Columns.Clear();
-			Columns[0].Title = "Parameter";
+			Columns[0].Title = "Subroutine";
 			Columns[0].SetWidth(150);
 			if (ScopeNode.Tag is ServerScan)
 				Columns.Add(new MmcListViewColumn("Database", 120));
 			Columns.AddRange(new MmcListViewColumn[] {
                 new MmcListViewColumn("Schema", 70),
-                new MmcListViewColumn("Subroutine", 150),
                 new MmcListViewColumn("Species", 150),
                 new MmcListViewColumn("Current Type", 100),
                 new MmcListViewColumn("Max Type", 100),
-				new MmcListViewColumn("Direction", 60),
+				new MmcListViewColumn("Symptom", 200),
             });
 			Resync();
 		}

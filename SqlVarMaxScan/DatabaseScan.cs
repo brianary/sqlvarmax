@@ -36,6 +36,11 @@ namespace Webcoder.SqlServer.SqlVarMaxScan
 		/// The list of parameters that use a deprecated data type.
 		/// </summary>
 		public List<MaxableParameter> MaxableParameters = new List<MaxableParameter>();
+
+		/// <summary>
+		/// The list of subroutines that use deprecated datatypes internally.
+		/// </summary>
+		public List<MaxableSubroutine> MaxableSubroutines = new List<MaxableSubroutine>();
 		#endregion
 
 		#region Public Properties
@@ -52,7 +57,7 @@ namespace Webcoder.SqlServer.SqlVarMaxScan
 		/// </summary>
 		public bool HasMaxables
 		{
-			get { return MaxableColumns.Count > 0 || MaxableParameters.Count > 0; }
+			get { return MaxableColumns.Count > 0 || MaxableParameters.Count > 0 || MaxableSubroutines.Count > 0; }
 		}
 		#endregion
 
@@ -80,6 +85,7 @@ namespace Webcoder.SqlServer.SqlVarMaxScan
 			UserDefinedFunctions.Clear();
 			MaxableParameters.Clear();
 			MaxableColumns.Clear();
+			MaxableSubroutines.Clear();
 			foreach (Table table in Database.Tables) if(!table.IsSystemObject)
 			{
 				Scanning(this, new ScanProgressEventArgs(statusmessage + table.Name, done++, total));
@@ -88,27 +94,33 @@ namespace Webcoder.SqlServer.SqlVarMaxScan
 			foreach (StoredProcedure storedprocedure in Database.StoredProcedures) if(!storedprocedure.IsSystemObject)
 			{
 				Scanning(this, new ScanProgressEventArgs(statusmessage + storedprocedure.Name, done++, total));
-				//TODO: UsesTextFunctions (if so, cannot scan this item further or add to collection)
-				//TODO: HasMaxableLocalVariable: MaxableParameter or MaxableSubroutine?
-				var maxparams = MaxableParameter.FindMaxableParameters(storedprocedure.Parameters);
-				if (maxparams.Count > 0)
+				if (MaxableSubroutine.HasMaxableInternals(storedprocedure))
+					MaxableSubroutines.Add(new MaxableSubroutine(storedprocedure));
+				else
 				{
-					StoredProcedures.Add(storedprocedure);
-					MaxableParameters.AddRange(maxparams);
+					var maxparams = MaxableParameter.FindMaxableParameters(storedprocedure.Parameters);
+					if (maxparams.Count > 0)
+					{
+						StoredProcedures.Add(storedprocedure);
+						MaxableParameters.AddRange(maxparams);
+					}
 				}
 			}
 			foreach (UserDefinedFunction udf in Database.UserDefinedFunctions)
 			{
 				Scanning(this, new ScanProgressEventArgs(statusmessage + udf.Name, done++, total));
-				//TODO: UsesTextFunctions (if so, cannot scan this item further or add to collection)
-				//TODO: HasMaxableLocalVariable: MaxableParameter or MaxableSubroutine?
-				if (MaxableParameter.HasMaxableReturnType(udf))
-					MaxableParameters.Add(new MaxableParameter(udf)); //TODO: MaxableSubroutine?
-				var maxparams = MaxableParameter.FindMaxableParameters(udf.Parameters);
-				if (maxparams.Count > 0)
+				if (MaxableSubroutine.HasMaxableInternals(udf))
+					MaxableSubroutines.Add(new MaxableSubroutine(udf));
+				else
 				{
-					UserDefinedFunctions.Add(udf);
-					MaxableParameters.AddRange(maxparams);
+					if (MaxableParameter.HasMaxableReturnType(udf))
+						MaxableParameters.Add(new MaxableParameter(udf));
+					var maxparams = MaxableParameter.FindMaxableParameters(udf.Parameters);
+					if (maxparams.Count > 0)
+					{
+						UserDefinedFunctions.Add(udf);
+						MaxableParameters.AddRange(maxparams);
+					}
 				}
 			}
 		}

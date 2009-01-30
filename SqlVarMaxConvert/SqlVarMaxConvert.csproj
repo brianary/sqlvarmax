@@ -49,15 +49,22 @@
       <DependentUpon>ConnectServerDialog.cs</DependentUpon>
     </Compile>
     <Compile Include="DatabaseNode.cs" />
-    <Compile Include="IRefreshableNode.cs" />
+    <Compile Include="MaxableListView.cs" />
     <Compile Include="ParametersListView.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ScanNode.cs" />
     <Compile Include="ServerNode.cs" />
     <Compile Include="SnapInInstaller.cs">
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="RootNode.cs" />
+    <Compile Include="SqlVarMaxIcons.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>SqlVarMaxIcons.resx</DependentUpon>
+    </Compile>
     <Compile Include="SqlVarMaxSnapIn.cs" />
+    <Compile Include="SubroutinesListView.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="Accessibility" />
@@ -79,11 +86,27 @@
     <EmbeddedResource Include="ConnectServerDialog.resx">
       <DependentUpon>ConnectServerDialog.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="SqlVarMaxIcons.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>SqlVarMaxIcons.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\SqlVarMaxScan\SqlVarMaxScan.csproj">
       <Project>{34454E4E-83F5-4E51-A450-17AF4256C200}</Project>
       <Name>SqlVarMaxScan</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\BlueFish.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\GreenFish.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\RedFish.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\YellowFish.ico" />
   </ItemGroup>
 </Project>

@@ -7,26 +7,9 @@ namespace Webcoder.SqlServer.SqlVarMaxScan
 	/// <summary>
 	/// A column that uses a deprecated data type, and is a candidate for conversion to the new var*(max) data types.
 	/// </summary>
-	public struct MaxableColumn //TODO: change to class, inherit new MaxableItem
+	public class MaxableColumn : MaxableItem
 	{
-		#region Private Fields
-		/// <summary>
-		/// The database this column is contained within.
-		/// </summary>
-		Database Database;
-		#endregion
-
 		#region Public Fields
-		/// <summary>
-		/// The name of the database.
-		/// </summary>
-		public readonly string DatabaseName;
-
-		/// <summary>
-		/// The schema name of the table.
-		/// </summary>
-		public readonly string SchemaName;
-
 		/// <summary>
 		/// The name of the table.
 		/// </summary>
@@ -36,16 +19,6 @@ namespace Webcoder.SqlServer.SqlVarMaxScan
 		/// The name of the column.
 		/// </summary>
 		public readonly string ColumnName;
-
-		/// <summary>
-		/// The current SQL datatype of the column.
-		/// </summary>
-		public readonly string CurrentDataTypeName;
-
-		/// <summary>
-		/// The corresponding var*(max) datatype to convert the column to.
-		/// </summary>
-		public readonly string MaxDataTypeName;
 
 		/// <summary>
 		/// Can the column accept null values?
@@ -81,11 +54,6 @@ namespace Webcoder.SqlServer.SqlVarMaxScan
 		/// The maximum data length in the column.
 		/// </summary>
 		public readonly int MaxDataLength;
-		
-		/// <summary>
-		/// The SQL script for converting the column to the var*(max) data type.
-		/// </summary>
-		public readonly string SqlConversionString;
 		#endregion
 
 		#region Public Constructors
@@ -101,12 +69,12 @@ namespace Webcoder.SqlServer.SqlVarMaxScan
 				throw new ArgumentException("Column argument must be a table column. Column passed has a parent of type "
 					+ column.Parent.GetType().FullName);
 			Database = table.Parent;
-			DatabaseName = Database.Name;
-			SchemaName = table.Schema;
+			databaseName = Database.Name;
+			schemaName = table.Schema;
 			TableName = table.Name;
 			ColumnName = column.Name;
 			DataType currentdatatype = column.DataType;
-			CurrentDataTypeName = column.DataType.ToSqlString();
+			currentDataTypeName = column.DataType.ToSqlString();
 			DataType maxdatatype = DataType.Int;
 			switch (currentdatatype.SqlDataType)
 			{
@@ -115,10 +83,10 @@ namespace Webcoder.SqlServer.SqlVarMaxScan
 				case SqlDataType.Text: maxdatatype = new DataType(SqlDataType.VarCharMax); break;
 				default: maxdatatype = currentdatatype; break;
 			}
-			MaxDataTypeName = maxdatatype.ToSqlString();
+			maxDataTypeName = maxdatatype.ToSqlString();
 			Nullable = column.Nullable;
 			Nullability = Nullable ? "null" : "not null";
-			SqlConversionString = String.Format("alter table [{0}].[{1}].[{2}] alter column [{3}] {4} {5}; -- was {6}\nGO\n"
+			sqlConversionString = String.Format("alter table [{0}].[{1}].[{2}] alter column [{3}] {4} {5}; -- was {6}\nGO\n"
 					+ "update [{0}].[{1}].[{2}] set [{3}]= [{3}]\nGO\n",
 					DatabaseName, SchemaName, TableName, ColumnName, MaxDataTypeName, Nullability, CurrentDataTypeName);
 			var stats = Database.ExecuteWithResults(String.Format("select count(*) as [RowCount], "
@@ -153,14 +121,6 @@ namespace Webcoder.SqlServer.SqlVarMaxScan
 						break;
 				}
 			return maxables;
-		}
-
-		/// <summary>
-		/// Convert the column.
-		/// </summary>
-		public void ExecuteConversion()
-		{
-			Database.ExecuteNonQuery(SqlConversionString);
 		}
 		#endregion
 	}
