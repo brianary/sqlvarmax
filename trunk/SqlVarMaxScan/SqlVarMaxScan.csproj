@@ -49,7 +49,9 @@
     <Compile Include="DatabaseScan.cs" />
     <Compile Include="DataTypeExtension.cs" />
     <Compile Include="MaxableColumn.cs" />
+    <Compile Include="MaxableItem.cs" />
     <Compile Include="MaxableParameter.cs" />
+    <Compile Include="MaxableSubroutine.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ScanProgressEventArgs.cs" />
     <Compile Include="ServerScan.cs" />

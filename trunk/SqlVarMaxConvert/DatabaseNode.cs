@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using Microsoft.ManagementConsole;
+﻿using Microsoft.ManagementConsole;
 using Webcoder.SqlServer.SqlVarMaxScan;
 
 namespace Webcoder.SqlServer.SqlVarMaxConvert
@@ -9,15 +6,8 @@ namespace Webcoder.SqlServer.SqlVarMaxConvert
     /// <summary>
     /// A database node of the snap-in.
     /// </summary>
-    public class DatabaseNode : ScopeNode, IRefreshableNode //TODO: scrap IRefreshableNode, inherit from new ScanNode
+    public class DatabaseNode : ScanNode
     {
-		#region Private Fields
-		/// <summary>
-		/// Used to report the status of the long operation to the user.
-		/// </summary>
-		private Status Status;
-		#endregion
-
         #region Public Constructors
         /// <summary>
         /// Constructs a database node, given the database.
@@ -34,50 +24,13 @@ namespace Webcoder.SqlServer.SqlVarMaxConvert
 				new MmcListViewDescription()
                 { DisplayName= "Database Parameters", ViewType= typeof(ParametersListView), 
                     Options= MmcListViewOptions.ExcludeScopeNodes },
+				new MmcListViewDescription()
+                { DisplayName= "Database Subroutines", ViewType= typeof(SubroutinesListView), 
+                    Options= MmcListViewOptions.ExcludeScopeNodes },
 			});
 			ViewDescriptions.DefaultIndex = 0;
 			EnabledStandardVerbs = StandardVerbs.Refresh;
 		}
         #endregion
-
-		#region Public Methods
-		/// <summary>
-		/// Rescans the database.
-		/// </summary>
-		/// <param name="status">Status for updating the console.</param>
-		public void Refresh(AsyncStatus status)
-		{
-			OnRefresh(status);
-		}
-		#endregion
-
-		#region Event Handlers
-		/// <summary>
-		/// Rescans the database.
-		/// </summary>
-		/// <param name="status">Status for updating the console.</param>
-		protected override void OnRefresh(AsyncStatus status)
-		{
-			base.OnRefresh(status);
-			Status = status;
-			DatabaseScan scan = (DatabaseScan)Tag;
-			Status.Title = "Refresh " + scan.Name;
-			scan.Scanning += new DatabaseScan.ScanProgressHandler(Scanning);
-			scan.PerformScan();
-			Status.Complete("Scan complete.", true);
-		}
-
-		/// <summary>
-		/// Called when the progress of the scan changes.
-		/// </summary>
-		/// <param name="sender">The source of the event.</param>
-		/// <param name="e">The details of the event.</param>
-		protected void Scanning(object sender, ScanProgressEventArgs e)
-		{
-			if (Status is SyncStatus && ((SyncStatus)Status).IsCancelSignaled)
-				Status.Complete("The scan has been cancelled.", false);
-			Status.ReportProgress(e.WorkComplete, e.TotalWork, e.StatusMessage);
-		}
-		#endregion
 	}
 }

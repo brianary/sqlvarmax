@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using Microsoft.ManagementConsole;
+﻿using Microsoft.ManagementConsole;
 using Webcoder.SqlServer.SqlVarMaxScan;
 
 namespace Webcoder.SqlServer.SqlVarMaxConvert
@@ -9,23 +6,18 @@ namespace Webcoder.SqlServer.SqlVarMaxConvert
     /// <summary>
     /// A server node of the snap-in.
     /// </summary>
-	public class ServerNode : ScopeNode, IRefreshableNode //TODO: scrap IRefreshableNode, inherit from new ScanNode
+	public class ServerNode : ScanNode
 	{
-		#region Private Fields
-		/// <summary>
-		/// Used to report the status of the long operation to the user.
-		/// </summary>
-		private Status Status;
-		#endregion
-
 		#region Private Methods
 		/// <summary>
 		/// Performs the server scan, and builds the child nodes.
 		/// </summary>
-		private void Refresh()
+		protected override void Refresh()
 		{
 			ServerScan serverscan = (ServerScan)Tag;
+			Status.Title = "Scanning " + serverscan.Name; //TODO: fix (can't do this here)
 			serverscan.PerformScan();
+			Children.Clear();
 			foreach (var databasescan in serverscan.DatabaseScans)
 				Children.Add(new DatabaseNode(databasescan));
 			Status.Complete("Scan complete.", true);
@@ -50,6 +42,9 @@ namespace Webcoder.SqlServer.SqlVarMaxConvert
                     Options= MmcListViewOptions.ExcludeScopeNodes },
 				new MmcListViewDescription()
                 { DisplayName= "All Database Parameters", ViewType= typeof(ParametersListView), 
+                    Options= MmcListViewOptions.ExcludeScopeNodes },
+				new MmcListViewDescription()
+                { DisplayName= "All Database Subroutines", ViewType= typeof(SubroutinesListView), 
                     Options= MmcListViewOptions.ExcludeScopeNodes },
 			});
 			ViewDescriptions.DefaultIndex = 0;

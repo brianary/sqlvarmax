@@ -2,6 +2,8 @@
 using System.ComponentModel;
 using System;
 using System.Security.Permissions;
+using System.Drawing;
+using System.Resources;
 
 [assembly: PermissionSetAttribute(SecurityAction.RequestMinimum, Unrestricted = true)]
 
@@ -21,7 +23,7 @@ namespace Webcoder.SqlServer.SqlVarMaxConvert
         /// </summary>
         public SqlVarMaxSnapIn()
         {
-            this.RootNode = new RootNode();
+            RootNode = new RootNode();
         }
         #endregion
     }

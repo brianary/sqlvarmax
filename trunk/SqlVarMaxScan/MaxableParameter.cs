@@ -9,33 +9,9 @@ namespace Webcoder.SqlServer.SqlVarMaxScan
 	/// <summary>
 	/// A parameter to a subroutine that uses a deprecated data type.
 	/// </summary>
-	public struct MaxableParameter //TODO: change to class, inherit new MaxableItem
+	public class MaxableParameter : MaxableItem
 	{
-		#region Private Fields
-		/// <summary>
-		/// The database this parameter is contained within.
-		/// </summary>
-		Database Database;
-
-		/// <summary>
-		/// Used to strip off the creation header of the subroutine.
-		/// </summary>
-		private static readonly Regex CreateHeader = new
-			Regex(@"\A\s*CREATE\s+(?<object>proc(?:edure)|function)\s+(?<schema>\[[^\]]+\].|\w+.)?",
-				RegexOptions.IgnoreCase | RegexOptions.Compiled);
-		#endregion
-
 		#region Public Fields
-		/// <summary>
-		/// The name of the database.
-		/// </summary>
-		public readonly string DatabaseName;
-
-		/// <summary>
-		/// The schema the object belongs to.
-		/// </summary>
-		public readonly string SchemaName;
-
 		/// <summary>
 		/// The name of the stored procedure or user-defined function.
 		/// </summary>
@@ -57,24 +33,9 @@ namespace Webcoder.SqlServer.SqlVarMaxScan
 		public readonly string ParameterName;
 
 		/// <summary>
-		/// The current SQL datatype of the parameter.
-		/// </summary>
-		public readonly string CurrentDataTypeName;
-
-		/// <summary>
-		/// The corresponding var*(max) datatype to convert the parameter to.
-		/// </summary>
-		public readonly string MaxDataTypeName;
-
-		/// <summary>
 		/// The direction (input or output) of the parameter.
 		/// </summary>
 		public readonly string ParameterDirectionName;
-
-		/// <summary>
-		/// The SQL script for converting the parameter to the var*(max) data type.
-		/// </summary>
-		public readonly string SqlConversionString;
 		#endregion
 
 		#region Public Constructors
@@ -86,14 +47,14 @@ namespace Webcoder.SqlServer.SqlVarMaxScan
 		{
 			StoredProcedure storedprocedure = parameter.Parent;
 			Database = storedprocedure.Parent;
-			DatabaseName = Database.Name;
-			SchemaName = storedprocedure.Schema;
+			databaseName = Database.Name;
+			schemaName = storedprocedure.Schema;
 			SubroutineName = storedprocedure.Name;
 			SubroutineType = storedprocedure.GetType();
 			SubroutineSpecies = SubroutineType.Name;
 			ParameterName = parameter.Name;
 			DataType currentdatatype = parameter.DataType;
-			CurrentDataTypeName = currentdatatype.ToSqlString();
+			currentDataTypeName = currentdatatype.ToSqlString();
 			DataType maxdatatype = DataType.Int;
 			switch (currentdatatype.SqlDataType)
 			{
@@ -102,7 +63,7 @@ namespace Webcoder.SqlServer.SqlVarMaxScan
 				case SqlDataType.Text: maxdatatype = new DataType(SqlDataType.VarCharMax); break;
 				default: maxdatatype = currentdatatype; break;
 			}
-			MaxDataTypeName = maxdatatype.ToSqlString();
+			maxDataTypeName = maxdatatype.ToSqlString();
 			ParameterDirectionName = parameter.IsOutputParameter ? "output" : "input";
 			if (storedprocedure.TextMode)
 			{
@@ -111,11 +72,11 @@ namespace Webcoder.SqlServer.SqlVarMaxScan
 					Regex.Escape(ParameterName) + @"\s+" + Regex.Escape(CurrentDataTypeName) + @"\b", 
 					ParameterName + " " + MaxDataTypeName, RegexOptions.IgnoreCase));
 				sql.Append(storedprocedure.TextBody);
-				SqlConversionString = sql.ToString();
+				sqlConversionString = sql.ToString();
 			}
 			else
 			{
-				SqlConversionString = "";
+				sqlConversionString = "";
 			}
 		}
 
@@ -126,8 +87,8 @@ namespace Webcoder.SqlServer.SqlVarMaxScan
 		public MaxableParameter(UserDefinedFunction udf)
 		{
 			Database = udf.Parent;
-			DatabaseName = Database.Name;
-			SchemaName = udf.Schema;
+			databaseName = Database.Name;
+			schemaName = udf.Schema;
 			SubroutineName = udf.Name;
 			SubroutineType = udf.GetType();
 			SubroutineSpecies = SubroutineType.Name;
@@ -135,14 +96,14 @@ namespace Webcoder.SqlServer.SqlVarMaxScan
 			ParameterDirectionName = "output";
 			if (udf.FunctionType != UserDefinedFunctionType.Scalar)
 			{
-				CurrentDataTypeName = "(not scalar)";
-				MaxDataTypeName = "(not scalar)";
-				SqlConversionString = "";
+				currentDataTypeName = "(not scalar)";
+				maxDataTypeName = "(not scalar)";
+				sqlConversionString = "";
 			}
 			else
 			{
 				DataType currentdatatype = udf.DataType;
-				CurrentDataTypeName = currentdatatype.Name;
+				currentDataTypeName = currentdatatype.Name;
 				DataType maxdatatype = DataType.Int;
 				switch (currentdatatype.SqlDataType)
 				{
@@ -151,7 +112,7 @@ namespace Webcoder.SqlServer.SqlVarMaxScan
 					case SqlDataType.Text: maxdatatype = new DataType(SqlDataType.VarCharMax); break;
 					default: maxdatatype = currentdatatype; break;
 				}
-				MaxDataTypeName = maxdatatype.ToSqlString();
+				maxDataTypeName = maxdatatype.ToSqlString();
 				if (udf.TextMode)
 				{
 					StringBuilder sql = new StringBuilder(String.Format("ALTER FUNCTION [{0}].", SchemaName));
@@ -159,11 +120,11 @@ namespace Webcoder.SqlServer.SqlVarMaxScan
 						@"\bRETURNS\s+" + Regex.Escape(MaxDataTypeName) + @"\b",
 						"RETURNS " + MaxDataTypeName, RegexOptions.IgnoreCase));
 					sql.Append(udf.TextBody);
-					SqlConversionString = sql.ToString();
+					sqlConversionString = sql.ToString();
 				}
 				else
 				{
-					SqlConversionString = "";
+					sqlConversionString = "";
 				}
 			}
 		}
@@ -176,14 +137,14 @@ namespace Webcoder.SqlServer.SqlVarMaxScan
 		{
 			UserDefinedFunction udf = parameter.Parent;
 			Database = udf.Parent;
-			DatabaseName = Database.Name;
-			SchemaName = udf.Schema;
+			databaseName = Database.Name;
+			schemaName = udf.Schema;
 			SubroutineName = udf.Name;
 			SubroutineType = udf.GetType();
 			SubroutineSpecies = SubroutineType.Name;
 			ParameterName = parameter.Name;
 			DataType currentdatatype = parameter.DataType;
-			CurrentDataTypeName = currentdatatype.ToSqlString();
+			currentDataTypeName = currentdatatype.ToSqlString();
 			DataType maxdatatype = DataType.Int;
 			switch (currentdatatype.SqlDataType)
 			{
@@ -192,7 +153,7 @@ namespace Webcoder.SqlServer.SqlVarMaxScan
 				case SqlDataType.Text: maxdatatype = new DataType(SqlDataType.VarCharMax); break;
 				default: maxdatatype = currentdatatype; break;
 			}
-			MaxDataTypeName = maxdatatype.ToSqlString();
+			maxDataTypeName = maxdatatype.ToSqlString();
 			ParameterDirectionName = "input";
 			if (udf.TextMode)
 			{
@@ -201,11 +162,11 @@ namespace Webcoder.SqlServer.SqlVarMaxScan
 					Regex.Escape(ParameterName) + @"\s+" + Regex.Escape(CurrentDataTypeName) + @"\b",
 					ParameterName + " " + MaxDataTypeName, RegexOptions.IgnoreCase));
 				sql.Append(udf.TextBody);
-				SqlConversionString = sql.ToString();
+				sqlConversionString = sql.ToString();
 			}
 			else
 			{
-				SqlConversionString = "";
+				sqlConversionString = "";
 			}
 		}
 		#endregion
@@ -268,14 +229,6 @@ namespace Webcoder.SqlServer.SqlVarMaxScan
 					return true;
 			}
 			return false;
-		}
-
-		/// <summary>
-		/// Convert the parameter.
-		/// </summary>
-		public void ExecuteConversion()
-		{
-			Database.ExecuteNonQuery(SqlConversionString);
 		}
 		#endregion
 	}

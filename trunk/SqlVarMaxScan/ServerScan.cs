@@ -39,6 +39,11 @@ namespace Webcoder.SqlServer.SqlVarMaxScan
 		/// The list of parameters on the server, for all databases, that use deprecated data types.
 		/// </summary>
 		public List<MaxableParameter> MaxableParameters = new List<MaxableParameter>();
+
+		/// <summary>
+		/// The list of subroutines that use deprecated datatypes internally.
+		/// </summary>
+		public List<MaxableSubroutine> MaxableSubroutines = new List<MaxableSubroutine>();
 		#endregion
 
 		#region Public Properties
@@ -78,14 +83,13 @@ namespace Webcoder.SqlServer.SqlVarMaxScan
 		public void PerformScan()
 		{
 			int done = 0, total = Server.Databases.Count;
-			string statusmessage = "Scanning ";
 			DatabaseScans.Clear();
 			MaxableColumns.Clear();
 			MaxableParameters.Clear();
 			foreach (Database database in Server.Databases) if(!database.IsSystemObject)
 			{
 				var dbscan = new DatabaseScan(database);
-				Scanning(this, new ScanProgressEventArgs(statusmessage + database.Name, done++, total));
+				Scanning(this, new ScanProgressEventArgs(database.Name, done++, total));
 				dbscan.Scanning+= new DatabaseScan.ScanProgressHandler(DatabaseScanning);
 				dbscan.PerformScan();
 				if (dbscan.HasMaxables)
@@ -93,6 +97,7 @@ namespace Webcoder.SqlServer.SqlVarMaxScan
 					DatabaseScans.Add(dbscan);
 					MaxableColumns.AddRange(dbscan.MaxableColumns);
 					MaxableParameters.AddRange(dbscan.MaxableParameters);
+					MaxableSubroutines.AddRange(dbscan.MaxableSubroutines);
 				}
 			}
 		}
