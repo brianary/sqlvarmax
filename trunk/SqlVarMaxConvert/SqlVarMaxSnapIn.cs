@@ -4,6 +4,8 @@ using System;
 using System.Security.Permissions;
 using System.Drawing;
 using System.Resources;
+using System.Windows;
+using System.Collections;
 
 [assembly: PermissionSetAttribute(SecurityAction.RequestMinimum, Unrestricted = true)]
 
@@ -24,6 +26,9 @@ namespace Webcoder.SqlServer.SqlVarMaxConvert
         public SqlVarMaxSnapIn()
         {
             RootNode = new RootNode();
+            var resx = new ResXResourceReader("SqlVarMaxIcons.resx");
+            foreach (DictionaryEntry r in resx)
+                SmallImages.Add((Icon)r.Value);
         }
         #endregion
     }

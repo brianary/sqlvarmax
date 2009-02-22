@@ -41,6 +41,7 @@ namespace Webcoder.SqlServer.SqlVarMaxConvert
 		protected override void OnRefresh(AsyncStatus status)
 		{
 			base.OnRefresh(status);
+            ImageIndex = this is ServerNode ? 1 : 2;
 			Status = status;
 			Refresh();
 		}

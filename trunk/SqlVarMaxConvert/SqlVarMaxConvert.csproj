@@ -3,7 +3,7 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProductVersion>9.0.30729</ProductVersion>
+    <ProductVersion>9.0.21022</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{0481CF14-7608-44FF-9E98-FCA836314CA2}</ProjectGuid>
     <OutputType>Library</OutputType>
@@ -85,10 +85,12 @@
   <ItemGroup>
     <EmbeddedResource Include="ConnectServerDialog.resx">
       <DependentUpon>ConnectServerDialog.cs</DependentUpon>
+      <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="SqlVarMaxIcons.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>SqlVarMaxIcons.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
@@ -98,15 +100,10 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <None Include="Resources\BlueFish.ico" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Resources\GreenFish.ico" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Resources\RedFish.ico" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Resources\YellowFish.ico" />
+    <Content Include="Resources\autoList.ico" />
+    <Content Include="Resources\db.ico" />
+    <Content Include="Resources\dbs.ico" />
+    <Content Include="Resources\Generic_Document.ico" />
+    <Content Include="Resources\generic_picture.ico" />
   </ItemGroup>
 </Project>
