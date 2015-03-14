@@ -1,0 +1,1 @@
+With this snap-in, all you have to do is provide a server to scan, and all of the instances of the image, ntext, and text data types will be displayed for each database.
